@@ -8,7 +8,6 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import "./home.css";
-//
 
 function Home() {
   const [tasks, setTasks] = useState([]);
