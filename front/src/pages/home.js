@@ -13,7 +13,6 @@ function Home() {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState();
   const [editingTask, setEditingTask] = useState(null);
-  const [, setEditingValue] = useState("");
 
   useEffect(() => {
     axios
@@ -42,7 +41,7 @@ function Home() {
     axios
       .post("http://localhost:5000/task", { name: newTask })
       .then((response) => {
-        setTasks([...tasks, response.data]);
+        //setTasks([...tasks, response.data.task]);
         setNewTask("");
         getTasks(); // Actualiza la lista de tareas después de agregar una nueva tarea
       })
@@ -63,7 +62,6 @@ function Home() {
   }
   function handleEditButtonClick(task) {
     setEditingTask(task);
-    setEditingValue(task.name);
   }
 
   function handleEditTask(id, newName) {
@@ -81,10 +79,6 @@ function Home() {
           })
         );
         setEditingTask(null);
-        setEditingValue("");
-        this.setState({
-          editingValue: setEditingValue,
-        });
       });
   }
   return (
@@ -123,15 +117,17 @@ function Home() {
                       className="border rounded py-2 px-3"
                       type="text"
                       value={editingTask.name}
-                      onChange={(e) =>
-                        setEditingTask({ ...editingTask, name: e.target.value })
-                      }
+                      onChange={(e) => {
+                        setEditingTask({
+                          ...editingTask,
+                          name: e.target.value,
+                        });
+                      }}
                     />
                     <button
                       className="bg-green-500 hover:bg-green-600 text-white font-bold ml-2 py-2 px-4 rounded mr-2"
                       onClick={() => {
                         handleEditTask(editingTask._id, editingTask.name);
-                        setEditingTask(null);
                       }}
                     >
                       <FontAwesomeIcon icon={faSave} className="mr-2" /> Save
@@ -143,7 +139,6 @@ function Home() {
                       className="border rounded py-2 px-3"
                       type="text"
                       value={task.name}
-                      onChange={(e) => setEditingValue(e.target.value)}
                       readOnly={true}
                       style={{ cursor: "default" }}
                     />
@@ -151,7 +146,6 @@ function Home() {
                       className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold ml-2 py-2 px-4 rounded mr-2"
                       onClick={() => {
                         handleEditButtonClick(task);
-                        setEditingValue(task.name);
                       }}
                     >
                       <FontAwesomeIcon icon={faEdit} className="mr-2" />
