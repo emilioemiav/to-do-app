@@ -8,11 +8,14 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import "./home.css";
+import SyncLoader from "react-spinners/SyncLoader";
 
 function Home() {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState();
   const [editingTask, setEditingTask] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [loadingTasks, setLoadingTasks] = useState(false);
 
   useEffect(() => {
     axios
@@ -37,29 +40,62 @@ function Home() {
       });
   }
 
-  function handleAddTask() {
+  const handleAddTask = () => {
+    setLoading(true);
     axios
       .post("http://localhost:5000/task", { name: newTask })
       .then((response) => {
-        //setTasks([...tasks, response.data.task]);
         setNewTask("");
-        getTasks(); // Actualiza la lista de tareas después de agregar una nueva tarea
+        getTasks();
       })
       .catch((error) => {
         console.error(error);
+      })
+      .finally(() => {
+        setLoading(false);
       });
-  }
-  function handleRemoveTask(id) {
+  };
+  <button
+    className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+    onClick={() => handleRemoveTask(tasks._id)}
+  >
+    {loadingTasks[tasks._id] ? (
+      <SyncLoader size={12} color="white" />
+    ) : (
+      <>
+        <FontAwesomeIcon icon={faTrash} />
+        <span className="ml-2">Remove</span>
+      </>
+    )}
+  </button>;
+  const handleRemoveTask = (id) => {
     const confirmDelete = window.confirm(
-      "¿Estás seguro de que deseas eliminar esta tarea?"
+      "Are you sure you want to delete this task?"
     );
-    if (confirmDelete) {
-      axios.delete(`http://localhost:5000/task/${id}`).then(() => {
+    if (!confirmDelete) return;
+
+    setLoadingTasks({
+      ...loadingTasks,
+      [id]: true,
+    });
+
+    axios
+      .delete(`http://localhost:5000/task/${id}`)
+      .then(() => {
         setTasks(tasks.filter((task) => task._id !== id));
-        console.log("eliminado");
+        setLoadingTasks({
+          ...loadingTasks,
+          [id]: false,
+        });
+      })
+      .catch(() => {
+        setLoadingTasks({
+          ...loadingTasks,
+          [id]: false,
+        });
       });
-    }
-  }
+  };
+
   function handleEditButtonClick(task) {
     setEditingTask(task);
   }
@@ -81,6 +117,7 @@ function Home() {
         setEditingTask(null);
       });
   }
+
   return (
     <div className="flex items-center justify-center h-screen bg-slate-600 ">
       <div className="p-8 bg-gray-200  rounded-xl">
@@ -97,12 +134,18 @@ function Home() {
                 onChange={(e) => setNewTask(e.target.value)}
               />
               <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 ml-2 rounded "
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 ml-2 rounded"
                 type="submit"
                 onClick={handleAddTask}
               >
-                <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                Add
+                {loading ? (
+                  <SyncLoader size={12} color="white" />
+                ) : (
+                  <>
+                    <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                    Add
+                  </>
+                )}
               </button>
             </li>
           </ul>
@@ -155,8 +198,14 @@ function Home() {
                       className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
                       onClick={() => handleRemoveTask(task._id)}
                     >
-                      <FontAwesomeIcon icon={faTrash} />
-                      <span className="ml-2">Remove</span>
+                      {loadingTasks[task._id] ? (
+                        <SyncLoader size={12} color="white" />
+                      ) : (
+                        <>
+                          <FontAwesomeIcon icon={faTrash} />
+                          <span className="ml-2">Remove</span>
+                        </>
+                      )}
                     </button>
                   </>
                 )}
@@ -170,3 +219,5 @@ function Home() {
 }
 
 export default Home;
+
+//105 - 114 cmbio
